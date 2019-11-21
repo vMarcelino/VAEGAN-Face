@@ -10,7 +10,7 @@ It's a Variational Adversarial Convolutional Autoencoder for faces
 
 Preferred instalation method is via conda:
 
-`conda create -n vaegan tensorflow opencv dlib`
+`conda create -c conda-forge -n vaegan tensorflow opencv dlib pydot graphviz`
 
 Replace `tensorflow` by `tensorflow-gpu` for training and running models on GPU
 

@@ -134,6 +134,10 @@ if __name__ == '__main__':
                         '--force',
                         help='force image to enter the network, regardless of the face preprocessing',
                         action='store_true')
+    parser.add_argument('-D',
+                        '--double',
+                        help='To compress or decompress using float32 instead of float16.',
+                        action='store_true')
     parser.add_argument("-m",
                         "--mse",
                         help="Use mse loss instead of binary cross entropy (default)",
@@ -157,7 +161,10 @@ if __name__ == '__main__':
             encoded = encoder.predict((img / 255).reshape(1, 128, 128, 3))[0]
             print(encoded)
             with open(args.file + '.compressed', 'wb') as f:
-                encoded[0].tofile(f)
+                if not args.double:
+                    encoded[0].astype('float16').tofile(f)
+                else:
+                    encoded[0].tofile(f)
 
             #encoded = np.linspace(1, -1, 64).reshape(1, 64)
             prediction = decoder.predict(encoded)
@@ -177,13 +184,19 @@ if __name__ == '__main__':
             encoded = encoder.predict((img / 255).reshape(1, 128, 128, 3))[0]
             print(encoded)
             with open(args.compress + '.compressed', 'wb') as f:
-                encoded[0].tofile(f)
+                if not args.double:
+                    encoded[0].astype('float16').tofile(f)
+                else:
+                    encoded[0].tofile(f)
 
         elif args.decompress:
             import cv2
 
             with open(args.decompress, 'rb') as f:
-                encoded = np.fromfile(f, dtype='float32')
+                if not args.double:
+                    encoded = np.fromfile(f, dtype='float16')
+                else:
+                    encoded = np.fromfile(f, dtype='float32')
 
             #encoded = np.linspace(1, -1, 64).reshape(1, 64)
             prediction = decoder.predict(encoded.reshape(1, 64))
