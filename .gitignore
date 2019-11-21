@@ -1,0 +1,6 @@
+saves
+no-face-detected
+data
+.coverage
+.vscode
+.pytest_cache
