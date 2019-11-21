@@ -130,6 +130,10 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', help='File to predict. Works only when -w is used.')
     parser.add_argument('-c', '--compress', help='File to compress. Works only when -w is used.')
     parser.add_argument('-d', '--decompress', help='File to decompress. Works only when -w is used.')
+    parser.add_argument('-F',
+                        '--force',
+                        help='force image to enter the network, regardless of the face preprocessing',
+                        action='store_true')
     parser.add_argument("-m",
                         "--mse",
                         help="Use mse loss instead of binary cross entropy (default)",
@@ -143,9 +147,12 @@ if __name__ == '__main__':
         vae.load_weights(args.weights)
         if args.file:
             import cv2
-            import face
+            if args.force:
+                img = cv2.resize(cv2.imread(args.file), (128, 128))
+            else:
+                import face
+                img = face.get_face(args.file, resize=(128, 128))
 
-            img = face.get_face(args.file, resize=(128, 128))
             cv2.imshow('compressed image', img)
             encoded = encoder.predict((img / 255).reshape(1, 128, 128, 3))[0]
             print(encoded)
@@ -160,9 +167,12 @@ if __name__ == '__main__':
 
         elif args.compress:
             import cv2
-            import face
+            if args.force:
+                img = cv2.resize(cv2.imread(args.file), (128, 128))
+            else:
+                import face
+                img = face.get_face(args.file, resize=(128, 128))
 
-            img = face.get_face(args.compress, resize=(128, 128))
             cv2.imshow('compressed image', img)
             encoded = encoder.predict((img / 255).reshape(1, 128, 128, 3))[0]
             print(encoded)
