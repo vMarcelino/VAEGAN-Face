@@ -127,7 +127,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-w", "--weights", help="Load h5 or tf model trained weights", default=save_file_path)
-    parser.add_argument('-f', '--file', help='File to predict. Works only when -w is used.', default='test2.jpg')
+    parser.add_argument('-f', '--file', help='File to predict. Works only when -w is used.')
+    parser.add_argument('-c', '--compress', help='File to compress. Works only when -w is used.')
+    parser.add_argument('-d', '--decompress', help='File to decompress. Works only when -w is used.')
     parser.add_argument("-m",
                         "--mse",
                         help="Use mse loss instead of binary cross entropy (default)",
@@ -144,14 +146,42 @@ if __name__ == '__main__':
             import face
 
             img = face.get_face(args.file, resize=(128, 128))
-            cv2.imshow('test', img)
+            cv2.imshow('compressed image', img)
             encoded = encoder.predict((img / 255).reshape(1, 128, 128, 3))[0]
             print(encoded)
+            with open(args.file + '.compressed', 'wb') as f:
+                encoded[0].tofile(f)
+
             #encoded = np.linspace(1, -1, 64).reshape(1, 64)
             prediction = decoder.predict(encoded)
             prediction = prediction[0]
             cv2.imshow('result', prediction)
-            cv2.waitKey()
+            cv2.imwrite(args.file + '.compressed.png', (prediction * 255).astype(int))
+
+        elif args.compress:
+            import cv2
+            import face
+
+            img = face.get_face(args.compress, resize=(128, 128))
+            cv2.imshow('compressed image', img)
+            encoded = encoder.predict((img / 255).reshape(1, 128, 128, 3))[0]
+            print(encoded)
+            with open(args.compress + '.compressed', 'wb') as f:
+                encoded[0].tofile(f)
+
+        elif args.decompress:
+            import cv2
+
+            with open(args.decompress, 'rb') as f:
+                encoded = np.fromfile(f, dtype='float32')
+
+            #encoded = np.linspace(1, -1, 64).reshape(1, 64)
+            prediction = decoder.predict(encoded.reshape(1, 64))
+            prediction = prediction[0]
+            cv2.imshow('decompressed image', prediction)
+            cv2.imwrite(args.decompress + '.png', (prediction * 255).astype(int))
+
+        cv2.waitKey()
 
     else:
         print('not found')
